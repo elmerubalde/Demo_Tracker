@@ -7,20 +7,22 @@
 <link rel="import" href="https://raw-dot-custom-elements.appspot.com/PolymerElements/paper-tabs/v2.1.1/paper-tabs/paper-tabs.html">
 <link rel="import" href="https://raw-dot-custom-elements.appspot.com/PolymerElements/paper-tabs/v2.1.1/paper-tabs/paper-tab.html">
 <link rel="import" href="https://raw-dot-custom-elements.appspot.com/PolymerElements/paper-tabs/v2.1.1/iron-pages/iron-pages.html"> <link rel="stylesheet" href="./css/leaflet-0.7.3/leaflet.css" />
-<link rel="stylesheet" href="./css/leaflet-0.7.3/leaflet.css" />
-<link rel="stylesheet" href="./css/custom.css" />
+ 
+<body>
 <my-element></my-element>
  
-<dom-module id="my-element">
-    <template>
-	  <div class="app-menu">
-		<paper-tabs selected="{{selected}}"> 
+<dom-module id="my-element"> 
+	<template>
+		<link rel="stylesheet" href="./css/leaflet-0.7.3/leaflet.css" />
+        <link rel="stylesheet" href="./css/custom.css" />
+		<div class="app-menu">
+	      <paper-tabs selected="{{selected}}" >
 			<paper-tab>Assets</paper-tab>
 			<paper-tab>Map</paper-tab>
 			<paper-tab>Weather</paper-tab>
-		</paper-tabs>
-	  </div>
-	  <div class="app-body">
+		  </paper-tabs>
+		</div> 
+	  	<div class="app-body">
         <template is="dom-if" if="[[isPage(selected, 0)]]">
 		   <table class="table-head">
             <tr>			
@@ -59,7 +61,7 @@
 		</template>
 		
 	</div>
- </template>
+</template>
  <script>
 	   	
   HTMLImports.whenReady(function() {
@@ -215,4 +217,4 @@
  	  
   </script>
  </dom-module>
- 
+</body>
