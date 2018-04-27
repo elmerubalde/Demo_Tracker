@@ -32,7 +32,7 @@
            </table>	
            <div class="table-body">		   
 			<table>	   
-				<template is="dom-repeat" items="{{assets}}">
+				<template is="dom-repeat" items="[[getAssets()]]">
 				<tr>			
 					<td width="10%">
 						<input id="input" type="checkbox" for="item" checked="{{item.visible}}" on-tap="toggleVisibility">
@@ -64,9 +64,9 @@
 	   	
   HTMLImports.whenReady(function() {
 	  
-	  var x2js = new X2JS();
-	  var weatherData ={};
-	   
+	  var x2js = new X2JS();  // xml to json lib
+
+	  /* calls weather station web service */ 
 	  function getWeatherData( filename, data){
 		var request = createCORSRequest("GET", filename);
 		request.send();
@@ -78,6 +78,7 @@
 		
 	  }
 	  
+	  /* cross browser xhr */
       function createCORSRequest(method, url){
 		var xhr = new XMLHttpRequest();
 		if ("withCredentials" in xhr){
@@ -92,7 +93,7 @@
 	 }	
   
 	  
-     
+      /* Read file containing point of interest */
 	  function readAssets( filename , filter) {
 	    var assets = []; 	  
      	var request = createCORSRequest("GET", filename);
@@ -160,8 +161,7 @@
 				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
 			}).addTo(this.map);
 			 
-			var customOptions =
-			{
+			var customOptions = {
 				'maxWidth': '400',
 				'className' : 'asset-popup'
 			};
@@ -171,31 +171,9 @@
 				iconSize: [40, 40], // size of the icon
 				popupAnchor: [0,-15]
 			});
-
-		    var assets = this.getAssets();	
-			for(i = 0 ; i < assets.length ; i++){
-			    if(assets[i].visible){
-					this.markers[assets[i].id] = L.marker([assets[i].lon, assets[i].lat], {icon: timsIcon})
-					 .bindPopup(assets[i].phone, customOptions)
-					 .addTo(this.map);
-			    }
-			}
-			
+            
 		},
-		    // Attribute change observers
-		latitudeChanged : function () {
-			var latitude = this.getAttribute('latitude');
-			this.updateCenter(latitude, '');
-		},
-		longitudeChanged : function () {
-			var longitude = this.getAttribute('longitude');
-			this.updateCenter('', longitude);
-		},
-		zoomChanged: function() {
-			var zoom = this.getAttribute('zoom');
-			this.map.setZoom(zoom);
-		},
-		 toggleVisibility: function(e, detail){
+  		toggleVisibility: function(e, detail){
 		   var asset = e.model.__data.item;
 			if(!asset.visible){
 			   this.showAsset(asset); 
