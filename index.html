@@ -1,0 +1,240 @@
+<title>Sample App</title>
+<meta charset="utf-8">
+<script src="./scripts/xml2json.min.js"></script>
+<script src="https://raw-dot-custom-elements.appspot.com/PolymerElements/paper-tabs/v2.1.1/webcomponentsjs/webcomponents-lite.js"></script>
+<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+<link href="https://raw-dot-custom-elements.appspot.com/PolymerElements/polymer.html">
+<link rel="import" href="https://raw-dot-custom-elements.appspot.com/PolymerElements/paper-tabs/v2.1.1/paper-tabs/paper-tabs.html">
+<link rel="import" href="https://raw-dot-custom-elements.appspot.com/PolymerElements/paper-tabs/v2.1.1/paper-tabs/paper-tab.html">
+<link rel="import" href="https://raw-dot-custom-elements.appspot.com/PolymerElements/paper-tabs/v2.1.1/iron-pages/iron-pages.html"> <link rel="stylesheet" href="./css/leaflet-0.7.3/leaflet.css" />
+<link rel="stylesheet" href="./css/leaflet-0.7.3/leaflet.css" />
+<link rel="stylesheet" href="./css/custom.css" />
+<my-element></my-element>
+ 
+<dom-module id="my-element">
+    <template>
+	  <div class="app-menu">
+		<paper-tabs selected="{{selected}}"> 
+			<paper-tab>Assets</paper-tab>
+			<paper-tab>Map</paper-tab>
+			<paper-tab>Weather</paper-tab>
+		</paper-tabs>
+	  </div>
+	  <div class="app-body">
+        <template is="dom-if" if="[[isPage(selected, 0)]]">
+		   <table class="table-head">
+            <tr>			
+				<td width="10%">Show</td>
+				<td width="20%">Id</td>
+				<td width="40%">Address</td>
+				<td width="30%">Phone</td>
+			</tr>
+           </table>	
+           <div class="table-body">		   
+			<table>	   
+				<template is="dom-repeat" items="{{assets}}">
+				<tr>			
+					<td width="10%">
+						<input id="input" type="checkbox" for="item" checked="{{item.visible}}" on-tap="toggleVisibility">
+					</td>
+					<td width="20%"><span>{{item.id}}</span></td>
+					<td width="40%"><span>{{item.address}}</span></td>
+					<td width="30%"><span>{{item.phone}}</span></td>
+				</tr>			  
+				</template>
+			</table>
+           </div>		   
+        </template>
+        <div >
+        <div style$="{{getClass(selected, 1)}}">		
+			<div id="map"></div>
+		</div>
+		</div>
+		<template is="dom-if" if="[[isPage(selected, 2)]]">
+		   <template is="dom-repeat" items="[[getWeatherData()]]">
+              <div class="layout__row" id="weather_[[index]]">
+				<div><span>{{item.title}}</span></div>
+			  </div>	
+			</template> 
+		</template>
+		
+	</div>
+ </template>
+ <script>
+	   	
+  HTMLImports.whenReady(function() {
+	  
+	  var x2js = new X2JS();
+	  var weatherData ={};
+	   
+	  function getWeatherData( filename, data){
+		var request = createCORSRequest("GET", filename);
+		request.send();
+		if (request.readyState == 4 && request.status == 200){
+					var result = x2js.xml_str2json( request.responseText );
+					if(result.feed && result.feed.entry) 
+						return result.feed.entry;
+					}; 
+		
+	  }
+	  
+      function createCORSRequest(method, url){
+		var xhr = new XMLHttpRequest();
+		if ("withCredentials" in xhr){
+			xhr.open(method, url, false);
+		} else if (typeof XDomainRequest != "undefined"){
+			xhr = new XDomainRequest();
+			xhr.open(method, url);
+		} else {	
+			xhr = null;
+		}
+		return xhr;
+	 }	
+  
+	  
+     
+	  function readAssets( filename , filter) {
+	    var assets = []; 	  
+     	var request = createCORSRequest("GET", filename);
+		request.send();
+		var lines = request.responseText.split(/\r\n|\n/); 
+		for(i = 0 ; i < lines.length ; i++) {
+			if( lines[i].indexOf(filter) > 0) {
+				var parts = lines[i].split(/\t/); 
+				
+				assets.push( { id: parts[0] , 
+					lon: parseFloat(parts[8]), 
+					lat: parseFloat(parts[9]), 
+					phone: parts[1] , 
+					address: parts[2], 
+					visible: false }); 
+			}
+		}
+		
+		return assets;
+	  }
+		 
+	  var timsIcon = L.icon({
+				iconUrl: './images/coffee.svg',
+				iconSize: [40, 40], // size of the icon
+			popupAnchor: [0,-15]
+        });	
+		
+      Polymer({
+        is: 'my-element',
+		markers: {}, 
+		map: {},
+		properties: { 
+			selected: {
+              type: Number,
+              value: 1
+            }
+		},
+		assets: undefined,
+		getAssets: function(){
+            if(this.assets){
+				return assets ;
+			}
+            else{
+			   this.assets = readAssets('TimHortons2.txt', 'London');
+			   return this.assets;
+			}				
+		},
+		getWeatherData: function(){
+		   return getWeatherData('https://cors.io/?https://weather.gc.ca/rss/city/on-137_e.xml');
+		}, 
+		getClass: function(curr, page) {
+			if( page === curr) /* a quick fix for map not showing properly */
+			   return 'height: 500px; width: 1000px; z-index: 100; margin-top: 20px;' ;
+			else
+			   return 'display: none;';
+		},
+		isPage: function(page, curr) {
+			return page === curr;
+		}, 
+		ready: function() {
+		    
+		    // Create the map 
+			this.map = L.map(this.$.map, {center: [42.99, -81.25],zoom: 13 });
+			L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+				attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+			}).addTo(this.map);
+			 
+			var customOptions =
+			{
+				'maxWidth': '400',
+				'className' : 'asset-popup'
+			};
+			
+			var timsIcon = L.icon({
+				iconUrl: './images/coffee.svg',
+				iconSize: [40, 40], // size of the icon
+				popupAnchor: [0,-15]
+			});
+
+		    var assets = this.getAssets();	
+			for(i = 0 ; i < assets.length ; i++){
+			    if(assets[i].visible){
+					this.markers[assets[i].id] = L.marker([assets[i].lon, assets[i].lat], {icon: timsIcon})
+					 .bindPopup(assets[i].phone, customOptions)
+					 .addTo(this.map);
+			    }
+			}
+			
+		},
+		    // Attribute change observers
+		latitudeChanged : function () {
+			var latitude = this.getAttribute('latitude');
+			this.updateCenter(latitude, '');
+		},
+		longitudeChanged : function () {
+			var longitude = this.getAttribute('longitude');
+			this.updateCenter('', longitude);
+		},
+		zoomChanged: function() {
+			var zoom = this.getAttribute('zoom');
+			this.map.setZoom(zoom);
+		},
+		 toggleVisibility: function(e, detail){
+		   var asset = e.model.__data.item;
+			if(!asset.visible){
+			   this.showAsset(asset); 
+			}else {
+			   this.hideAsset(asset); 
+			}
+			this.updateCenter(asset.lon, asset.lat );
+			
+			for(i = 0 ; this.assets.length; i ++){
+				if(this.assets[i].id === asset.id) {
+					this.assets[i].visible =  asset.visible;
+					break;
+				}
+			}
+			
+		},
+		showAsset: function (asset){ 
+			this.markers[asset.id] = L.marker([asset.lon, asset.lat], {icon: timsIcon})
+					 .bindPopup(asset.phone,{ 'maxWidth': '400',  'className' : 'asset-popup'});
+			this.markers[asset.id].addTo(this.map);
+			asset.visible = true;		   
+		},
+		hideAsset: function (asset){
+		    var marker = this.markers[asset.id];
+			if(marker)
+			 this.map.removeLayer(marker);
+			delete this.markers[asset.id];
+			asset.visible = false;
+		},
+		// Update the map
+		updateCenter: function (opt_lat, opt_lon) {
+			if (opt_lat === '') { opt_lat = this.latitude; }
+			if (opt_lon === '') { opt_lon = this.longitude; }
+			this.map.setView([opt_lat, opt_lon], this.zoom);
+		}
+        });
+      });
+	  
+ 	  
+  </script>
+ </dom-module>
+ 

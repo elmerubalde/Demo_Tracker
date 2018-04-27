@@ -1,0 +1,64 @@
+  .app-menu {
+    margin: 0;
+    display: flex;
+    align-items: flex-end;
+    background: #009688;
+    color: white;
+	width: 400px;
+  }
+  .app-body {
+    padding-top: 20px;
+    background: #849688;
+    color: white;
+	height: 600px;
+	padding-left:40px;
+	font-family: 'Roboto', 'Noto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  paper-tabs {
+    font-family: 'Roboto', 'Noto', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    width: 100%;
+    text-transform: uppercase;
+    margin-bottom: 1px;
+  }
+  
+  #map { 
+        height: 500px;
+        width: 1000px;
+		z-index: 100 ;
+		margin-top: 20px;
+		
+  }
+   
+  .table-head{
+     max-height: 80px; 
+	 width: 600px;
+  } 
+  
+  .table-body{
+     max-height: 500px;
+	 overflow-y:auto;
+	 width: 600px;
+  }
+  
+  .layout__row{
+    border-style: solid;
+    border-width: 1px;
+    margin-bottom: 5px;
+	width:300px;
+	height: 50px;
+	padding: 10px 10px 10px 10px;
+  }
+  
+  .asset-popup{
+	  color: black;
+  }
+   
+.custom .leaflet-popup-tip,
+.custom .leaflet-popup-content-wrapper {
+    background: #e93434;
+    color: #ffffff;
+}
+ 
+ 
